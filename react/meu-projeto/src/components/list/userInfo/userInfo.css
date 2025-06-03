@@ -1,0 +1,20 @@
+.userInfo {
+    padding: 20px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+}
+
+.user img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+}
+
+.icons img {
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+}
+
+
