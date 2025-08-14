@@ -1,97 +1,120 @@
-import "./chat.css"
-import {useEffect, useRef, useState} from "react";  
+import { onSnapshot, doc } from "firebase/firestore";
+import "./chat.css";
+import { useEffect, useRef, useState } from "react";
+import { db } from "../../lib/firebase";
+import { useChatStore } from "../../lib/chatStore";
+import { useUserStore } from "../../lib/userStore";
+import { updateDoc, arrayUnion, getDoc } from "firebase/firestore";
+
 
 const Chat = () => {
-const endRef = useRef(null)
+  const [chat, setChat] = useState();
+  const [text, setText] = useState("");
+  const { chatId, user } = useChatStore();
+  const { currentUser } = useUserStore();
+  const endRef = useRef(null);
 
-useEffect(() => {
-  endRef.current?.scrollIntoView({ behavior: "smooth"}); 
-}, []); 
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  useEffect(() => {
+    if (!chatId) return;
+
+    const unSub = onSnapshot(doc(db, "chats", chatId), (res) => {
+      setChat(res.data());
+    });
+
+    return () => {
+      unSub();
+    };
+  }, [chatId]);
+
+  const handleSend = async () => {
+    if (text === "") return;
+
+    try {
+      await updateDoc(doc(db, "chats", chatId), {
+        messages: arrayUnion({
+          senderId: currentUser.id,
+          text,
+          createdAt: new Date(),
+        }),
+      });
+
+      const userIDs = [currentUser.id, user.id];
+
+      userIDs.forEach(async (id) => {
+        const userChatsRef = doc(db, "userchats", id);
+        const userChatsSnapshot = await getDoc(userChatsRef);
+
+        if (userChatsSnapshot.exists()) {
+          const userChatsData = userChatsSnapshot.data();
+
+          const chatIndex = userChatsData.chats.findIndex(
+            (c) => c.chatId === chatId
+          );
+
+          userChatsData.chats[chatIndex].lastMessage = text;
+          userChatsData.chats[chatIndex].isSeen = 
+            id === currentUser.id ? true : false;
+          userChatsData.chats[chatIndex].updatedAt = Date.now();
+
+          await updateDoc(userChatsRef, {
+            chats: userChatsData.chats,
+          });
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
-    <div className='chat'>
+    <div className="chat">
       <div className="top">
         <div className="user">
-          <img src="./avatar.png" alt="" />
+          <img src={user?.avatar || "./avatar.png"} alt="" />
           <div className="texts">
-            <span>Jane Doe</span>
-            <p>Lorem ipsum dolor, sit amet.</p>
+            <span>Ollama</span>
+            <p>{user?.username}</p>
           </div>
         </div>
         <div className="icons">
-          <img src="./phone.png" alt="" />
-          <img src="./video.png" alt="" />
           <img src="./info.png" alt="" />
         </div>
       </div>
-      <div className="center">
-        <div className="message">
-          <img src="./avatar.png" alt="" />
-          <div className="texts">
-            <p>
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. 
-              Repellat perspiciatis magnam vel 
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-         <div className="message own">
-          <div className="texts">
-            <p>
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. 
-              Repellat perspiciatis magnam vel 
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-         <div className="message"> 
-          <img src="./avatar.png" alt="" />         
-          <div className="texts">
-            <p>
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. 
-              Repellat perspiciatis magnam vel 
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-         <div className="message own">
-          <div className="texts">
-            <p>
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. 
-              Repellat perspiciatis magnam vel 
-            </p>
-            <span>1 min ago</span>
-          </div>
-        </div>
-         <div className="message">
-          <img src="./avatar.png" alt="" />
-          <div className="texts">
-            <p>
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. 
-              Repellat perspiciatis magnam vel 
-            </p>
-            <span>1 min ago</span>
-          </div>
-          <div ref={endRef}></div>
-        </div>
-      <div className="bottom"> 
-        <div className="icons">
-          <img src="./img.png" alt="" />
-          <img src="./camera.png" alt="" />
-          <img src="./mic.png" alt="" />
-        </div>
-        <input type="text" placeholder="type a message..."/>
-        <div className="emoji">
-          <img src="./emoji.png" alt="" />  
-        </div>
-        <button className="sendButton">Send</button>
-      </div>
-     </div> 
-    </div>
-  )
-}
 
-export default Chat
+      <div className="center">
+        {chat?.messages?.map((message, index) => (
+          <div className="message own" key={index}>
+            <div className="texts">
+              <p>{message.text}</p>
+              {/* <span>{message}</span> */}
+            </div>
+          </div>
+        ))}
+        <div ref={endRef}></div>
+      </div>
+
+      <div className="bottom">
+        <div className="icons">
+        </div>
+        <input 
+          type="text" 
+          placeholder="Digite algo..." 
+          value={text} 
+          onChange={(e) => setText(e.target.value)}/>
+        <button className="sendButton" onClick={handleSend}>Send</button>
+      </div>
+    </div>
+  );
+};
+
+export default Chat;
+
+
+
 
 
 

@@ -73,7 +73,7 @@
 
         .texts{
           p{
-            background-color: #5183fe;
+            background-color: #5193be;
           }
         }
       }
@@ -133,7 +133,7 @@
     }
 
     .sendButton {
-      background-color: #5183fe;
+      background-color: #5193be;
       color: white;
       padding: 5px 10px;
       border: none;
