@@ -10,19 +10,17 @@ import Chat from "./components/chat/Chat";
 import { useChatStore } from './lib/chatStore';
 
 const App = () => {
-  const {currentUser, isLoading,fetchUserInfo}= useUserStore()
+  const {currentUser, isLoading, fetchUserInfo} = useUserStore();
   const {chatId} = useChatStore();
 
-   useEffect(() => {
+  useEffect(() => {
     const unSub = onAuthStateChanged(auth, (user) => {
       fetchUserInfo(user?.uid); 
     });
- 
-    return () => {
-      unSub(); 
-    }; 
+    
+    return () => unSub(); 
   }, [fetchUserInfo]);
-
+  
   if(isLoading) return <div className="loading">Carregando...</div>
   
   return (
@@ -41,5 +39,5 @@ const App = () => {
   );
 };
 
-export default App; 
+export default App;
 

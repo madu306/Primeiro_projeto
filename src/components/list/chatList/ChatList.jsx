@@ -59,7 +59,7 @@ const ChatList = () => {
     <div className="chatList">
       <div className="search">
         <div className="searchBar">
-          <img src="/search.png" alt="" />
+          <img src="./search.png" alt="" />
           <input
             type="text"
             placeholder="Pesquisar"
@@ -90,7 +90,7 @@ const ChatList = () => {
             backgroundColor: chat?.isSeen ? "transparent" : "#5193be",
           }}
         >
-          <img src={chat.user.avatar || "./avatar.png"} alt="" />
+          <img src={chat.user.avatar || "./arquivo.png"} alt="" />
           <div className="texts">
             <span>{chat.user.username}</span>
             <p>{chat.lastMessage}</p>

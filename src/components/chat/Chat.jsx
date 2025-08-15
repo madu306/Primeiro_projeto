@@ -74,7 +74,7 @@ const Chat = () => {
     <div className="chat">
       <div className="top">
         <div className="user">
-          <img src={user?.avatar || "./avatar.png"} alt="" />
+          <img src={user?.avatar || "./ollama.png"} alt="" />
           <div className="texts">
             <span>Ollama</span>
             <p>{user?.username}</p>
